@@ -44,6 +44,11 @@ class EvaluationResult:
     suggestions:  list[str] = field(default_factory=list)
     entropy_bits: float     = 0.0
     crack_time:   str       = "instant"
+    length_pts:   int       = 0
+    diversity_pts:int       = 0
+    entropy_pts:  int       = 0
+    pattern_pts:  int       = 0
+    dict_pts:     int       = 0
 
 
 # ---------------------------------------------------------------------------
@@ -124,6 +129,11 @@ def evaluate_password(password: str) -> EvaluationResult:
             label="Very Weak",
             details=["No password entered"],
             suggestions=["Enter a password to evaluate."],
+            length_pts=0,
+            diversity_pts=0,
+            entropy_pts=0,
+            pattern_pts=0,
+            dict_pts=0,
         )
 
     cached = _EVAL_CACHE.get(password)
@@ -232,6 +242,11 @@ def evaluate_password(password: str) -> EvaluationResult:
         suggestions=suggestions,
         entropy_bits=e_bits,
         crack_time=crack,
+        length_pts=l_score,
+        diversity_pts=d_score,
+        entropy_pts=e_score,
+        pattern_pts=p_penalty,
+        dict_pts=dict_penalty,
     )
 
     if len(_EVAL_CACHE) >= 32:

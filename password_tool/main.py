@@ -26,7 +26,11 @@ except ImportError:
     )
     sys.exit(1)
 
-from password_tool.evaluator import evaluate_password, EvaluationResult, generate_password
+from password_tool.evaluator import (
+    evaluate_password, EvaluationResult, generate_password,
+    MAX_LENGTH_SCORE, MAX_DIVERSITY_SCORE, MAX_ENTROPY_SCORE,
+    PATTERN_PENALTY_TOTAL, SIMILAR_PENALTY, DICT_WORD_PENALTY,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -96,6 +100,7 @@ class PasswordAnalyzerApp(ctk.CTk):
 
         self._debounce_id: str | None = None
         self._password_visible = False
+        self._breakdown_visible = False
 
         # Animation state
         self._anim_target_score = 0
@@ -303,6 +308,28 @@ class PasswordAnalyzerApp(ctk.CTk):
             right_col, fg_color=_DIVIDER, height=1,
         ).pack(fill="x", pady=_SP_12)
 
+        # Score Breakdown toggle
+        self._breakdown_toggle_btn = ctk.CTkButton(
+            right_col,
+            text="\u25b6  Score Breakdown",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=13, weight="bold"),
+            fg_color="transparent",
+            hover_color=_BG_PANEL,
+            text_color=_TEXT_SECONDARY,
+            anchor="w",
+            command=self._toggle_breakdown,
+        )
+        self._breakdown_toggle_btn.pack(fill="x", pady=(0, _SP_4))
+
+        self._breakdown_container = ctk.CTkFrame(right_col, fg_color="transparent")
+        self._breakdown_container.pack(fill="x", anchor="w")
+
+        # Horizontal separator (below breakdown)
+        self._breakdown_sep = ctk.CTkFrame(
+            right_col, fg_color=_DIVIDER, height=1,
+        )
+        self._breakdown_sep.pack(fill="x", pady=_SP_12)
+
         # Suggestions section
         ctk.CTkLabel(
             right_col, text="Suggestions",
@@ -425,6 +452,66 @@ class PasswordAnalyzerApp(ctk.CTk):
             self._entry.configure(show="\u2022")
             self._toggle_btn.configure(text="\u25ce")
 
+    # ====================================================== Breakdown toggle
+
+    def _toggle_breakdown(self) -> None:
+        self._breakdown_visible = not self._breakdown_visible
+        if self._breakdown_visible:
+            self._breakdown_toggle_btn.configure(text="\u25bc  Score Breakdown")
+            if hasattr(self, "_last_result"):
+                self._render_breakdown(self._last_result)
+        else:
+            self._breakdown_toggle_btn.configure(text="\u25b6  Score Breakdown")
+            for w in self._breakdown_container.winfo_children():
+                w.destroy()
+
+    def _render_breakdown(self, result: EvaluationResult) -> None:
+        for w in self._breakdown_container.winfo_children():
+            w.destroy()
+
+        if not self._breakdown_visible:
+            return
+
+        dimensions = [
+            ("Length", result.length_pts, MAX_LENGTH_SCORE),
+            ("Diversity", result.diversity_pts, MAX_DIVERSITY_SCORE),
+            ("Entropy", result.entropy_pts, MAX_ENTROPY_SCORE),
+            ("Pattern", result.pattern_pts, abs(PATTERN_PENALTY_TOTAL)),
+            ("Dictionary", result.dict_pts, max(abs(SIMILAR_PENALTY), abs(DICT_WORD_PENALTY))),
+        ]
+
+        for name, pts, max_abs in dimensions:
+            row = ctk.CTkFrame(self._breakdown_container, fg_color="transparent")
+            row.pack(fill="x", pady=1)
+
+            is_penalty = pts < 0
+            pts_color = _DANGER if is_penalty else _SUCCESS if pts > 0 else _TEXT_SECONDARY
+            sign = "+" if pts > 0 else ""
+
+            ctk.CTkLabel(
+                row, text=name,
+                font=ctk.CTkFont(family=_FONT_FAMILY, size=12),
+                text_color=_TEXT_SECONDARY, width=80, anchor="w",
+            ).pack(side="left")
+
+            bar_frame = ctk.CTkFrame(row, fg_color=_GAUGE_BG, height=10, corner_radius=5)
+            bar_frame.pack(side="left", fill="x", expand=True, padx=(_SP_8, _SP_8))
+            bar_frame.pack_propagate(False)
+
+            if pts != 0:
+                fill_pct = min(abs(pts) / max_abs, 1.0) if max_abs > 0 else 0
+                fill_color = _DANGER if is_penalty else pts_color
+                fill_bar = ctk.CTkFrame(
+                    bar_frame, fg_color=fill_color, height=10, corner_radius=5,
+                )
+                fill_bar.place(relwidth=fill_pct, relheight=1.0)
+
+            ctk.CTkLabel(
+                row, text=f"{sign}{pts}",
+                font=ctk.CTkFont(family=_FONT_FAMILY, size=12, weight="bold"),
+                text_color=pts_color, width=40, anchor="e",
+            ).pack(side="right")
+
     # ====================================================== Debounce
 
     def _on_key(self, event=None) -> None:
@@ -456,6 +543,7 @@ class PasswordAnalyzerApp(ctk.CTk):
     # ====================================================== Display update
 
     def _update_display(self, result: EvaluationResult) -> None:
+        self._last_result = result
         score = result.score
         label = result.label
         color = _STRENGTH_COLORS.get(label, _TEXT_SECONDARY)
@@ -510,6 +598,9 @@ class PasswordAnalyzerApp(ctk.CTk):
                 text_color=_SUCCESS,
             ).pack(anchor="w")
 
+        # ---- Breakdown ----
+        self._render_breakdown(result)
+
     # ====================================================== Reset
 
     def _reset_display(self) -> None:
@@ -536,6 +627,9 @@ class PasswordAnalyzerApp(ctk.CTk):
             self._sugg_container,
             "Start typing to see suggestions.",
         )
+
+        for w in self._breakdown_container.winfo_children():
+            w.destroy()
 
 
 # ---------------------------------------------------------------------------
