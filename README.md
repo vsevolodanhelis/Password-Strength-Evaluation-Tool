@@ -1,4 +1,4 @@
-# Password Strength Evaluation Tool
+# AEGIS — Password Strength Evaluation Tool
 
 A Python-based desktop application that evaluates password strength using a hybrid scoring model combining rule-based analysis, Shannon entropy estimation, pattern detection, and dictionary comparison — all processed locally with no network required.
 
