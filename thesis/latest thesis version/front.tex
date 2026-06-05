@@ -1,0 +1,66 @@
+% *************** Title pages ***************
+
+% ************************************************************
+% The definition of the appearance of the first pages is here:
+% Title page, page with statement of thesis content
+% and table of contents pages
+% ************************************************************
+% *************** Title page ***************
+%placement of the university's logo and name
+\noindent
+\parbox{65mm}{\includegraphics[width=13.0cm, height=3.0cm]{logoWSIiZ}}
+
+\vspace{10mm}
+\begin{center}
+{\Large{}\textbf{\wydzial}}
+\end{center}
+\vspace{10mm}
+\noindent
+\hspace{30mm}{\Large{}\textbf{\kierunek}}\\
+
+\noindent
+\hspace{30mm}{\Large{}\textbf{\specjalnosc}}
+\vspace{30mm}
+\begin{center}
+	{\large{}\autor}\\
+	{\large{}\album}\\
+	\vspace{15pt}
+	{\huge{}\textbf{\textit{\temat}}}\\
+	\vspace{20pt}
+	{\normalsize{}Supervisor: \promotor}\\
+	\vspace{100pt}
+	{\LARGE{}\textbf{\typpracy}}\\
+	\vspace{190pt}
+	{\large{}\textbf{\miasto {} \rok}}
+\end{center}
+
+% empty footer content - no page number
+\thispagestyle{empty}
+
+% *************** Page with statement of work content  ***************
+
+\thispagestyle{empty}
+\vspace*{\fill}
+\begin{center}
+\textbf{Declaration of Authorship}
+\end{center}
+\vspace{20pt}
+\noindent
+I hereby declare that this thesis is my own original work and that I have not submitted it, in whole or in part, for any other degree or qualification at this or any other university. All sources of information used have been acknowledged by means of complete references. I further declare that the software application described in this thesis was developed by me as an original contribution to the field of password security.
+\vspace{30pt}
+\begin{flushright}
+\begin{tabular}{p{6cm}p{4cm}}
+\rule{6cm}{0.4pt} & \rule{4cm}{0.4pt} \\
+Vsevolod Anhelis & Date \\
+\end{tabular}
+\end{flushright}
+\vspace*{\fill}
+\newpage
+
+% *************** Table of contents ***************
+\tableofcontents
+% empty footer content - no page number
+\thispagestyle{empty}
+\newpage
+
+% *************** End of front.tex file ***************

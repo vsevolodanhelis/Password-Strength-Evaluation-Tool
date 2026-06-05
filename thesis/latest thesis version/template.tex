@@ -1,0 +1,111 @@
+% **** Master's, bachelor's or engineering thesis template ****
+
+\documentclass[english,12pt,twoside,a4paper]{report}
+\renewcommand{\baselinestretch}{1.15} 
+
+\input{style.tex}
+
+% Definition of useful commands
+\newcommand{\wydzial}{FACULTY OF APPLIED INFORMATION TECHNOLOGY}
+\newcommand{\kierunek}{Field of study: INFORMATION TECHNOLOGY}
+\newcommand{\specjalnosc}{Specialty: Computer science}
+\newcommand{\autor}{Vsevolod Anhelis}
+\newcommand{\album}{No. of student's record book 70533} % (you can insert your real number if you want)
+\newcommand{\temat}{Development of a Hybrid Password Strength Evaluation Tool Using Python}
+\newcommand{\promotor}{dr in\.z. Atsuo Murata} % or insert your real supervisor if different
+\newcommand{\typpracy}{DIPLOMA THESIS AT FIRST-CYCLE STUDIES}
+\newcommand{\miasto}{Rzeszów}
+\newcommand{\rok}{2026}
+
+\begin{document}
+
+% *************** Include definition of first pages ***************
+\input{front.tex}
+
+% *************** The main part of the work ***************
+\input{Introduction.tex}
+\addcontentsline{toc}{chapter}{Introduction}
+\newpage
+\input{T1}
+\newpage
+\input{T2}
+\newpage
+\input{P1}
+\newpage
+\input{P2}
+\newpage
+\input{P3}
+% *************** Bibliography ***************
+\begin{thebibliography}{99} 
+\addcontentsline{toc}{chapter}{Bibliography}
+
+% Online sources 
+\bibitem{upguardBreaches} UpGuard, “The 72 Biggest Data Breaches of All Time [Updated 2025]”, Available: \url{https://www.upguard.com/blog/biggest-data-breaches}. Last accessed: April 29, 2026.
+\bibitem{nistPasswords} NIST, “Digital Identity Guidelines: Authentication and Lifecycle Management (SP 800-63B) — Passwords and Memorized Secrets”, Available: \url{https://pages.nist.gov/800-63-4/sp800-63b/passwords/}. Last accessed: April 29, 2026.
+\bibitem{owaspAuth} OWASP Foundation, “Authentication Cheat Sheet — Password Policies and Controls”, Available: \url{https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html}. Last accessed: April 29, 2026.
+\bibitem{owaspTop10Auth} OWASP Foundation, “A07:2025 Authentication Failures — OWASP Top 10”, Available: \url{https://owasp.org/Top10/2025/A07_2025-Authentication_Failures/}. Last accessed: April 29, 2026.
+\bibitem{passwordEntropyWiki} Wikipedia, “Password Strength”, Available: \url{https://en.wikipedia.org/wiki/Password_strength}. Last accessed: April 29, 2026.
+\bibitem{saltCryptography} Wikipedia, “Salt (cryptography)”, Available: \url{https://en.wikipedia.org/wiki/Salt_(cryptography)}. Last accessed: April 29, 2026.
+\bibitem{credentialHoneypots} Matej Rabzelj \& Urban Sedlar, “Beyond the Leak: Analyzing the Real-World Exploitation of Stolen Credentials Using Honeypots”, *Sensors (Basel)*, 2025. Available: \url{https://pmc.ncbi.nlm.nih.gov/articles/PMC12197152/}. Last accessed: April 29, 2026.
+\bibitem{passwordCrackingBloom} “Reinforcing cybersecurity with Bloom filters: a novel approach to password cracking efficiency”, *EURASIP Journal on Information Security*, 2024. Available: \url{https://link.springer.com/article/10.1186/s13635-024-00183-2}. Last accessed: April 29, 2026.
+\bibitem{strongPasswordSciDirect} “Strong Password — an overview”, *ScienceDirect Topics*, Available: \url{https://www.sciencedirect.com/topics/computer-science/strong-password}. Last accessed: April 29, 2026.
+\bibitem{securePasswordGuide} DevToolsPro.org, “The Ultimate Guide to Secure Password Generation: Best Practices, Tools, and Security Strategies for Developers”, Available: \url{https://devtoolspro.org/articles/the-ultimate-guide-to-secure-password-generation-best-practices-and-tools/}. Last accessed: April 29, 2026.
+\bibitem{customtkinter2024} Schimansky, T. (2024). CustomTkinter Documentation. \url{https://customtkinter.tomschimansky.com}. Last accessed: April 29, 2026.
+\bibitem{python2024} Python Software Foundation (2024). \textit{Python 3.14 Documentation}. \url{https://docs.python.org/3.14/}. Last accessed: April 29, 2026.
+\bibitem{nist2017} National Institute of Standards and Technology (2017, updated 2020). \textit{Digital Identity Guidelines: Authentication and Lifecycle Management}. NIST Special Publication 800-63B. \url{https://pages.nist.gov/800-63-3/sp800-63b.html}. Last accessed: April 29, 2026.
+\bibitem{verizon2024} Verizon (2024). \textit{Data Breach Investigations Report}. \url{https://www.verizon.com/business/resources/reports/dbir/}. Last accessed: April 29, 2026.
+\bibitem{nordpass2024} NordPass (2024). \textit{Top 200 Most Common Passwords Report}. \url{https://nordpass.com/most-common-passwords-list/}. Last accessed: April 29, 2026.
+\bibitem{hibp2021} Hunt, T. (2021). ``Have I Been Pwned.'' \url{https://haveibeenpwned.com}. Last accessed: April 29, 2026.
+
+% Journal
+\bibitem{shannon1948} Shannon, C.E. (1948). ``A Mathematical Theory of Communication.'' \textit{Bell System Technical Journal}, 27(3), 379--423.
+\bibitem{wheeler2016} Wheeler, D. (2016). ``zxcvbn: Low-Budget Password Strength Estimation.'' \textit{Proceedings of the 25th USENIX Security Symposium}.
+\bibitem{weir2009} Weir, M., Aggarwal, S., de Medeiros, B., \& Glodek, B. (2009). ``Password Cracking Using Probabilistic Context-Free Grammars.'' \textit{IEEE Symposium on Security and Privacy}, 391--405.
+\bibitem{castelluccia2012} Castelluccia, C., D\"urmuth, M., \& Perito, D. (2012). ``Adaptive Password-Strength Meters from Markov Models.'' \textit{Proceedings of the Network and Distributed System Security Symposium (NDSS)}.
+\bibitem{melcher2016} Melicher, W., et al. (2016). ``Fast, Lean, and Accurate: Modeling Password Guessability Using Neural Networks.'' \textit{Proceedings of the 25th USENIX Security Symposium}, 175--191.
+\bibitem{florencio2007} Flor\^encio, D., \& Herley, C. (2007). ``A Large-Scale Study of Web Password Habits.'' \textit{Proceedings of the 16th International Conference on World Wide Web}, 657--666.
+\bibitem{bonneau2012} Bonneau, J. (2012). ``The Science of Guessing: Analyzing an Anonymized Corpus of 70 Million Passwords.'' \textit{IEEE Symposium on Security and Privacy}, 538--552.
+\bibitem{nielsen1994} Nielsen, J. (1994). \textit{Usability Engineering}. Academic Press.
+\bibitem{proctor2002} Proctor, R.W., Lien, M.C., Vu, K.P.L., Schultz, E.E., \& Salvendy, G. (2002). ``Improving Computer Security for Authentication: The Case for Better Password Policies.'' \textit{Proceedings of the Human Factors and Ergonomics Society Annual Meeting}, 46(19), 1638--1641.
+\bibitem{das2021} Das, A., Bonneau, J., Caesar, M., Borisov, N., \& Wang, X. (2019). ``Tails of Password Strength Metrics.'' \textit{Proceedings of the Network and Distributed System Security Symposium (NDSS)}.
+\bibitem{Ur2012} Ur, B., et al. (2012). ``How Does Your Password Measure Up? The Effect of Strength Meters on Password Creation.'' \textit{Proceedings of the 21st USENIX Security Symposium}, 65--80.
+\bibitem{Komanduri2011} Komanduri, S., et al. (2011). ``Of Passwords and People: Measuring the Effect of Password-Composition Policies.'' \textit{Proceedings of the SIGCHI Conference on Human Factors in Computing Systems}, 2525--2534.
+\bibitem{Kelley2012} Kelley, P.G., et al. (2012). ``Guess Again (and Again and Again): Measuring Password Strength by Simulating Password-Cracking Algorithms.'' \textit{IEEE Symposium on Security and Privacy}, 523--537.
+\bibitem{homer2012} Homer, S. (2012). ``A Short History of Passwords.'' In: \textit{Information Security}, Springer, 1--5.
+
+\end{thebibliography}
+
+\chapter{Glossary of Key Terms}
+\begin{description}
+    \item[Entropy] A measure of unpredictability or information content, measured in bits. Higher entropy means greater resistance to brute-force attacks.
+    \item[Bit (of entropy)] A unit of information representing a binary choice. Each bit doubles the number of possible passwords.
+    \item[log₂] Logarithm base 2. Used in entropy calculation to determine how many bits are needed to represent the password space.
+    \item[Levenshtein distance] The minimum number of single-character edits (insertions, deletions, substitutions) required to change one word into another.
+    \item[Brute-force attack] An attack that tries every possible combination until the correct password is found.
+    \item[Dictionary attack] An attack that tries words from a pre-defined list of common passwords.
+    \item[Credential stuffing] Using username/password pairs from one breach to attempt logins on other services.
+    \item[Pattern attack] An attack that exploits common human patterns in password creation (e.g., ``qwerty'', ``123456'', repeated characters).
+    \item[Leetspeak] A system of modified spellings using numbers and symbols to replace letters (e.g., ``@'' for ``a'', ``3'' for ``e'').
+    \item[Crack time] Estimated time to guess a password via brute-force, calculated as $2^{entropy} / (guesses per second)$.
+    \item[False negative] A weak password incorrectly rated as strong.
+    \item[False positive] A strong password incorrectly rated as weak.
+    \item[Static charset] A fixed set of characters used in entropy calculation (less accurate than dynamic charset).
+    \item[Dynamic charset] A character set that adapts based on which character types actually appear in the password.
+    \item[Scoring constants] Predefined values that determine how much each factor (length, diversity, etc.) contributes to the final score.
+    \item[Heuristic] A problem-solving approach based on experience and intuition rather than rigorous mathematical proof.
+    \item[Threat model] A specification of the types of attacks a security mechanism is designed to defend against.
+    \item[Offline attack] An attack where the attacker has obtained a cryptographic hash and attempts to crack it without interacting with the target system.
+    \item[Online attack] An attack that requires interaction with a target service (e.g., web login form) and is subject to rate limiting.
+    \item[Passphrase] A sequence of words used for authentication (e.g., ``correct horse battery staple'').
+    \item[Concept drift] The change in what constitutes a ``common'' password over time, requiring periodic updates to password blacklists.
+\end{description}
+
+
+\newpage
+
+% *************** Completion ***************
+\input{back.tex}
+
+\end{document}
+% *************** End of file ***************
+

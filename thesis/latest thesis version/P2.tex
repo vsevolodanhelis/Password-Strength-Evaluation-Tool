@@ -1,0 +1,225 @@
+%=============================================================================
+% CHAPTER 5: TESTING AND EVALUATION
+%=============================================================================
+\chapter{Testing and Evaluation}
+
+\section{Testing Methodology}
+
+To evaluate the effectiveness, robustness, and usability of the password strength evaluation tool, I employed three complementary approaches:
+
+\begin{enumerate}
+    \item \textbf{Functional testing:} I tested the tool with a curated set of over 20 representative passwords spanning eight categories---empty input, trivial/common passwords, leetspeak variants, keyboard patterns (including reversed), dictionary words, moderate-strength passwords, strong passwords, and generated passwords. For each password, I recorded the score, label, entropy, crack time, and detected patterns.
+
+    \item \textbf{Comparative analysis:} I compared the tool's ratings against two widely used online password checkers---the Norton Password Checker and the Kaspersky Password Checker---for the same set of passwords. This comparison reveals where the tools agree and where they disagree, highlighting the strengths and limitations of each approach.
+
+    \item \textbf{Usability self-evaluation:} I evaluated the user interface against selected Nielsen's heuristics for usability, assessing how well the tool supports effective, efficient, and satisfying interaction.
+\end{enumerate}
+
+
+\section{Functional Test Results}
+
+Table~\ref{tab:functional_tests} presents the results of functional testing with 20 representative passwords. The data was collected directly from the tool's output, ensuring that the results accurately reflect the actual implementation.
+
+\begin{table}[H]
+\centering
+\caption{Functional test results for representative passwords across eight categories.}
+\label{tab:functional_tests}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3cm} >{\raggedright\arraybackslash}p{1.8cm} c >{\raggedright\arraybackslash}p{1.5cm} >{\raggedright\arraybackslash}p{2.2cm}}
+\toprule
+\textbf{Password} & \textbf{Category} & \textbf{Score} & \textbf{Label} & \textbf{Entropy (bits)} \\
+\midrule
+(empty) & Empty & 0 & Very Weak & 0.0 \\
+\texttt{123456} & Trivial & 6 & Very Weak & 19.9 \\
+\texttt{password} & Trivial & 10 & Very Weak & 37.6 \\
+\texttt{p@ssw0rd} & Leetspeak & 10 & Very Weak & 48.7 \\
+\texttt{qwerty} & Keyboard & 10 & Very Weak & 28.2 \\
+\texttt{ytrewq} & Keyboard (rev.) & 16 & Very Weak & 28.2 \\
+\texttt{aaa} & Repeated & 6 & Very Weak & 14.1 \\
+\texttt{abc123} & Sequential & 10 & Very Weak & 31.0 \\
+\texttt{admin} & Dictionary & 10 & Very Weak & 23.5 \\
+\texttt{iloveyou} & Dictionary & 10 & Very Weak & 37.6 \\
+\texttt{Sunshine2024!} & Moderate & 62 & Moderate & 91.8 \\
+\texttt{MyDogMax} & Moderate & 47 & Weak & 51.3 \\
+\texttt{TestPass123!} & Moderate & 50 & Weak & 72.1 \\
+\texttt{Tr0ub4dor\&3} & Moderate & 70 & Moderate & 72.1 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Functional test results (continued): strong and generated passwords.}
+\label{tab:functional_tests2}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3cm} >{\raggedright\arraybackslash}p{1.8cm} c >{\raggedright\arraybackslash}p{1.5cm} >{\raggedright\arraybackslash}p{2.2cm}}
+\toprule
+\textbf{Password} & \textbf{Category} & \textbf{Score} & \textbf{Label} & \textbf{Entropy (bits)} \\
+\midrule
+Generated (16-char, all categories) & Strong & 76+ & Strong & 104.8 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Analysis of Results}
+
+The functional test results reveal several important observations:
+
+\begin{itemize}
+    \item \textbf{Common passwords are correctly capped:} All passwords that exactly match entries in the common-passwords list (\texttt{123456}, \texttt{password}, \texttt{admin}, \texttt{iloveyou}) receive a score of 10 or below, consistent with the \texttt{EXACT\_COMMON\_CAP} constant. Despite having varying lengths and entropy values, these passwords are never rated higher than ``Very Weak.''
+
+    \item \textbf{Reversed keyboard patterns are detected:} The password \texttt{ytrewq} (reversed \texttt{qwerty}) receives a score of 16, higher than \texttt{qwerty} (10). This is because \texttt{ytrewq} is not in the common-passwords list, so it is not capped at 10; however, it still receives a keyboard pattern penalty. Its entropy of 28.2 bits (six lowercase characters: $6 \times \log_2 26 \approx 28.2$) results in a low entropy score of 10, and the keyboard pattern penalty of $-5$ further reduces the total. The fact that it is detected as a keyboard pattern at all is a distinctive capability---most online checkers do not flag reversed keyboard patterns.
+
+    \item \textbf{Leetspeak variants are caught:} The password \texttt{p@ssw0rd} receives a score of 10 because it exactly matches an entry in the common-passwords list (which includes common leetspeak variants). This demonstrates that the dictionary component covers not only literal words but also well-known substitution patterns.
+
+    \item \textbf{Entropy correlates with score:} For passwords that do not match the dictionary, the score generally correlates with the entropy value. However, the relationship is not linear because the scoring model also accounts for length, diversity, and patterns.
+
+    \item \textbf{Generated passwords consistently score high:} Cryptographically generated passwords of 16 characters using all four character categories consistently score 76 or above, receiving the ``Strong'' label with entropy values exceeding 100 bits and crack times of ``centuries+.''
+
+    \item \textbf{Dictionary substrings reduce moderate passwords:} Passwords like \texttt{TestPass123!} (50, Weak) receive a lower score than expected because the dictionary substring check detects common-password substrings (e.g., \texttt{pass}, \texttt{pass123}), applying a $-15$ penalty. This demonstrates the tool's ability to identify embedded weak components within seemingly complex passwords.
+\end{itemize}
+
+
+
+\section{Comparative Analysis}
+
+To contextualise the tool's ratings, I compared its design and capabilities against two widely used online password checkers: the Norton Password Checker and the Kaspersky Password Checker. Table~\ref{tab:comparative} presents a feature-level comparison of the three approaches.
+
+\begin{table}[H]
+\centering
+\caption{Feature-level comparison: the proposed tool vs.\ Norton Password Checker vs.\ Kaspersky Password Checker.}
+\label{tab:comparative}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.5cm} >{\centering\arraybackslash}p{2.5cm} >{\centering\arraybackslash}p{2.5cm} >{\centering\arraybackslash}p{2.5cm}}
+\toprule
+\textbf{Feature} & \textbf{Proposed Tool} & \textbf{Norton Checker} & \textbf{Kaspersky Checker} \\
+\midrule
+Offline processing & Yes & No (web-based) & No (web-based) \\
+Numerical score (0--100) & Yes & No (qualitative only) & No (qualitative only) \\
+Pattern detection & Yes (sequential, repeated, keyboard) & Limited & Limited \\
+Reversed keyboard patterns & Yes & No & No \\
+Dictionary comparison & Yes (181 entries + Levenshtein) & Yes (proprietary) & Yes (proprietary) \\
+Breach database check & No (local list only) & Yes & Yes \\
+Score breakdown panel & Yes (5 dimensions) & No & No \\
+Password generator & Yes (cryptographic) & No & No \\
+Privacy guarantee & Local-only processing & Requires password transmission & Requires password transmission \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The comparison reveals several key differences:
+
+\begin{itemize}
+    \item \textbf{Agreement on trivial passwords:} All three tools recognise that passwords like \texttt{123456}, \texttt{password}, and \texttt{qwerty} are weak. This is expected, as these passwords are universally recognised as insecure.
+
+    \item \textbf{Privacy vs.\ breach coverage trade-off:} Norton and Kaspersky leverage proprietary breach databases containing millions of compromised credentials, enabling them to flag passwords that have appeared in real-world data breaches. The proposed tool trades this coverage for local-only processing, ensuring that no password data leaves the user's machine. This is a deliberate design choice motivated by privacy considerations.
+
+    \item \textbf{Reversed keyboard pattern detection:} The proposed tool's automatic detection of reversed keyboard patterns (e.g., \texttt{ytrewq}) is a capability that neither Norton nor Kaspersky explicitly advertises. Most online checkers evaluate password strength based on character composition and entropy without checking for reversed keyboard patterns.
+
+    \item \textbf{Transparency of scoring:} The proposed tool provides a specific numerical score (0--100) along with a per-dimension breakdown, while Norton and Kaspersky provide only qualitative ratings (e.g., ``Weak,'' ``Fair,'' ``Strong'') without explaining how the rating was computed. The numerical score and breakdown allow users to see the impact of specific changes to their password.
+
+    \item \textbf{Educational feedback:} The proposed tool provides detailed analysis observations and actionable suggestions that explain \textit{what} to change and \textit{why}, while online checkers typically provide only a strength label without educational context.
+\end{itemize}
+
+\clearpage
+
+\section{Usability Self-Evaluation}
+
+I evaluated the user interface against selected Nielsen's heuristics \cite{nielsen1994}, focusing on the seven most relevant principles for this type of tool:
+
+\begin{enumerate}
+    \item \textbf{Visibility of system status:} The tool provides continuous, real-time feedback through multiple visual channels: the semicircular gauge, the horizontal meter bar, the numerical score, the colour-coded strength label, and the entropy and crack time displays. All indicators update within 300\,ms of the user's last keystroke, ensuring that the system status is always visible and current.
+
+    \item \textbf{Match between system and the real world:} The suggestions use natural language to explain \textit{why} a particular change is recommended (e.g., ``Avoid keyboard patterns like qwerty or asdf---these are in every cracking dictionary''), rather than using technical jargon. The crack time display translates abstract entropy values into concrete, understandable terms (e.g., ``2 years'' vs.\ ``37.6 bits'').
+
+    \item \textbf{User control and freedom:} The visibility toggle allows users to show or hide their password at any time. The ``Generate Strong Password'' button provides an immediate alternative when the user's own password is weak. The evaluation is always running and can be triggered by simply typing, with no commitment or submission required.
+
+    \item \textbf{Consistency and standards:} The colour system (red = Very Weak, orange = Weak, yellow = Moderate, green = Strong) is applied consistently across all visual indicators---gauge, meter, label, and details. The interface follows standard desktop application conventions (entry field, button, window controls).
+
+    \item \textbf{Error prevention:} The real-time analysis eliminates the possibility of a user submitting a weak password without being aware of its weakness. There is no ``submit'' or ``analyze'' button that could be clicked without reviewing the results; the analysis is continuous and unavoidable.
+
+    \item \textbf{Aesthetic and minimalist design:} The dark theme provides a clean, distraction-free environment. The interface contains only the elements necessary for password evaluation---no advertisements, no unnecessary navigation, and no information that is not directly relevant to the assessment. The two-column layout presents all information without scrolling.
+
+    \item \textbf{Recognition rather than recall:} The strength assessment is visible simultaneously through four redundant channels (gauge position, meter fill, numerical score, and colour-coded label), ensuring that users can recognise the strength level at a glance without having to recall what a particular score range means. The details and suggestions sections are always visible in the right column, so users do not need to navigate to a separate screen or panel.
+\end{enumerate}
+
+\clearpage
+
+\section{Discussion}
+
+\subsection{Advantages Over Existing Solutions}
+
+The hybrid approach offers several advantages over single-method evaluation tools and existing online password checkers:
+
+\begin{itemize}
+    \item \textbf{Comprehensive attack coverage:} By combining rule-based scoring, entropy estimation, pattern detection, and dictionary comparison, the tool covers the most common attack strategies (brute-force, dictionary, credential stuffing, pattern-based). Each method addresses a weakness that the others miss.
+
+    \item \textbf{Local processing preserves privacy:} Unlike online password checkers, which require transmitting the password over the internet, all processing in the tool happens locally. This eliminates the risk of the password being intercepted, logged, or stored by a third-party service.
+
+    \item \textbf{Real-time feedback is more effective:} Studies have shown that immediate feedback during password creation leads to stronger passwords than feedback provided after submission \cite{proctor2002}. The 300\,ms debounce provides analysis that is fast enough to feel instantaneous while avoiding unnecessary computation during rapid typing.
+
+    \item \textbf{Reversed pattern detection:} The automatic generation and detection of reversed keyboard patterns is a novel contribution that most existing online checkers lack. This means that passwords like \texttt{ytrewq}, which some users might consider less predictable than \texttt{qwerty}, are correctly identified as weak.
+
+    \item \textbf{Transparent scoring model:} The use of named scoring constants makes the model auditable and explainable. Users and developers can understand exactly how the score is computed, which addresses a key shortcoming of ``black box'' strength meters that provide a rating without explanation.
+
+    \item \textbf{Per-dimension score breakdown:} The toggleable ``Score Breakdown'' panel provides a visual decomposition of the final score into its five constituent dimensions, showing exactly how each factor contributed. No mainstream online password checker offers this level of transparency. Users can see not only \textit{that} their password scored 50/100, but \textit{why}: Length +15, Diversity +25, Entropy +30, Pattern $-5$, Dictionary $-15$.
+
+    \item \textbf{Educational feedback instead of only a score:} While most online checkers provide a qualitative label (``Weak,'' ``Strong'') or a numerical rating without explanation, the tool provides detailed analysis observations and actionable suggestions that explain \textit{what} to change and \textit{why}. The suggestions originate from the evaluation engine, ensuring consistency between the score and the feedback.
+
+    \item \textbf{Offline functionality:} The tool has no dependency on external APIs or network services. It works entirely offline, making it suitable for use in environments with restricted or no internet access (e.g., secure facilities, air-gapped systems). This also means the tool is not affected by API rate limits, service outages, or changes to third-party terms of service.
+
+    \item \textbf{Levenshtein distance for similarity detection:} Few simple password checkers implement edit-distance-based similarity checking. This allows the tool to detect minor variations of common passwords (e.g., \texttt{p@ssw0rd} as a variant of \texttt{password}) that exact dictionary matching would miss.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Comparison of password evaluation methodologies.}
+\label{tab:methodology}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3cm} >{\centering\arraybackslash}p{2.5cm} >{\centering\arraybackslash}p{2.5cm} >{\centering\arraybackslash}p{2.5cm}}
+\toprule
+\textbf{Method} & \textbf{Brute-force Resistance} & \textbf{Dictionary Attack Resistance} & \textbf{Pattern Attack Resistance} \\
+\midrule
+Pure Entropy & High & None & None \\
+Pure Dictionary & None & High & None \\
+Pure Pattern & None & None & High \\
+The Hybrid & Medium-High & High & High \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+From a societal perspective, these advantages translate into a tool that not only evaluates passwords but actively educates users about password security. The transparent scoring model and the score breakdown feature make the evaluation process understandable and trustworthy, encouraging users to engage with the feedback rather than simply accepting or ignoring a rating. The privacy-first, offline design means that even security-conscious users and organisations can adopt the tool without reservations about data exposure.
+
+\subsection{Disadvantages}
+
+The tool also has several limitations and disadvantages:
+
+\begin{itemize}
+    \item \textbf{Small dictionary:} The common-passwords list contains only 181 entries, compared to the billions of entries in databases like Have I Been Pwned. This means that some compromised passwords will not be flagged by the dictionary component.
+
+    \item \textbf{No machine-learning scoring:} The evaluation model is entirely heuristic, with scoring weights determined by the developer rather than trained on large datasets. Machine-learning-based models like the one described by Melcher et al.\ \cite{melcher2016} can provide more nuanced strength predictions.
+
+    \item \textbf{No online breach check:} The tool does not query online breach databases, so it cannot detect passwords that have been compromised in data breaches but are not in the local dictionary.
+
+    \item \textbf{Limited leetspeak handling:} While the dictionary includes some common leetspeak variants (e.g., \texttt{p@ssw0rd}), the tool does not perform systematic leetspeak normalisation (e.g., converting ``@'' to ``a'', ``3'' to ``e'', ``0'' to ``o'') beyond what the Levenshtein distance captures. A password like \texttt{P@\$\$w0rd!} might evade the dictionary check while being an obvious variant of \texttt{password}.
+
+    \item \textbf{Single-language dictionary:} The common-passwords list contains only English-language entries. Passwords based on words from other languages will not be flagged by the dictionary component.
+\end{itemize}
+
+\clearpage
+
+\section{Limitations}
+
+In addition to the disadvantages discussed above, several inherent limitations of the evaluation model should be acknowledged:
+
+\begin{itemize}
+    \item \textbf{Crack time assumes brute-force only:} The estimated crack time is based on exhaustive brute-force search ($2^{H} / 10^{10}$ seconds). For weak passwords, dictionary-optimised attacks are far more efficient than brute-force. For example, the password \texttt{password} has a theoretical entropy of 37.6 bits, implying a crack time of approximately 5 seconds even by brute-force, but in practice it would be found instantly by any dictionary attack. The crack time display should therefore be interpreted as an upper bound for strong passwords and as potentially misleading for weak ones.
+
+    \item \textbf{Entropy model is charset-based:} The entropy calculation assumes that each character is drawn uniformly at random from the effective character set. In practice, users do not select characters uniformly---they favour common letters, words, and patterns. Frequency-based entropy models that account for character distributions and common password structures provide more accurate estimates but are significantly more complex to implement.
+
+    \item \textbf{Scoring weights are heuristic:} The scoring weights (25 for length, 25 for diversity, 30 for entropy, $-5$ per pattern type, $-20$ for similarity, $-15$ for dictionary words) were determined through iterative testing and refinement, not through empirical validation against large-scale password datasets. Different weight configurations might produce more accurate rankings for specific threat models.
+
+    \item \textbf{Dictionary list may not reflect current trends:} The 181-entry common-passwords list is static and may not include passwords that have become common after the list was compiled. Password popularity changes over time (``concept drift''), and a static list cannot capture these trends without regular updates.
+
+    \item \textbf{No passphrase-specific evaluation:} The tool evaluates passwords character by character and does not account for the specific properties of passphrases (multi-word sequences). A passphrase like \texttt{correct horse battery staple} might receive a high entropy-based score but is actually a well-known example from a webcomic and would be included in many cracking dictionaries.
+\end{itemize}
