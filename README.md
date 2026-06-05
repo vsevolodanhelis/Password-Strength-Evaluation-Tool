@@ -40,7 +40,7 @@ Or on Windows, double-click `run.bat` — it will automatically create a virtual
 | Character diversity | 0–25 | + |
 | Entropy | 0–30 | + |
 | Pattern penalty | 0 to −15 | − |
-| Dictionary penalty | cap at 10 / −20 / −15 | − |
+| Dictionary penalty | −15 (word) / −20 (similar) / cap at 10 (exact) | − |
 
 Final score is clamped to 0–100 and labeled:
 
