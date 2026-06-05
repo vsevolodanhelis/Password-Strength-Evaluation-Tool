@@ -130,6 +130,9 @@ def estimate_crack_time(entropy_bits: float) -> str:
     if entropy_bits <= 0:
         return "instant"
 
+    if entropy_bits > 200:
+        return "centuries+"
+
     total_combinations = 2 ** entropy_bits
     seconds = total_combinations / _GUESSES_PER_SECOND
 

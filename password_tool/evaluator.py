@@ -12,7 +12,6 @@ The central scoring engine.  Combines five analysis dimensions:
 Final score is clamped to 0-100.
 """
 
-import functools
 import secrets
 import string
 from dataclasses import dataclass, field
