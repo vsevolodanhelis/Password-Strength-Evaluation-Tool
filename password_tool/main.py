@@ -100,7 +100,6 @@ class PasswordAnalyzerApp(ctk.CTk):
 
         self._debounce_id: str | None = None
         self._password_visible = False
-        self._breakdown_visible = False
 
         # Animation state
         self._anim_target_score = 0
@@ -141,12 +140,8 @@ class PasswordAnalyzerApp(ctk.CTk):
             text_color=_TEXT_SECONDARY,
         ).pack(pady=(_SP_4, 0))
 
-        # --- Scrollable body ----------------------------------------------
-        body = ctk.CTkScrollableFrame(
-            self, fg_color=_BG_PRIMARY, corner_radius=0,
-            scrollbar_button_color=_BG_PANEL,
-            scrollbar_button_hover_color=_ACCENT,
-        )
+        # --- Body ---------------------------------------------------------
+        body = ctk.CTkFrame(self, fg_color=_BG_PRIMARY, corner_radius=0)
         body.pack(fill="both", expand=True, padx=0, pady=0)
 
         content = ctk.CTkFrame(body, fg_color="transparent")
@@ -280,6 +275,16 @@ class PasswordAnalyzerApp(ctk.CTk):
         )
         self._crack_label.pack()
 
+        # Score Breakdown (left column, below entropy/crack time)
+        ctk.CTkLabel(
+            left_col, text="Score Breakdown",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=12, weight="bold"),
+            text_color=_TEXT_PRIMARY,
+        ).pack(anchor="w", pady=(0, _SP_4))
+
+        self._breakdown_container = ctk.CTkFrame(left_col, fg_color="transparent")
+        self._breakdown_container.pack(fill="x")
+
         # -- Vertical divider --
         divider = ctk.CTkFrame(analysis_card, fg_color=_DIVIDER, width=1)
         divider.pack(side="left", fill="y", padx=(_SP_8, _SP_8), pady=_SP_16)
@@ -307,28 +312,6 @@ class PasswordAnalyzerApp(ctk.CTk):
         ctk.CTkFrame(
             right_col, fg_color=_DIVIDER, height=1,
         ).pack(fill="x", pady=_SP_12)
-
-        # Score Breakdown toggle
-        self._breakdown_toggle_btn = ctk.CTkButton(
-            right_col,
-            text="\u25b6  Score Breakdown",
-            font=ctk.CTkFont(family=_FONT_FAMILY, size=13, weight="bold"),
-            fg_color="transparent",
-            hover_color=_BG_PANEL,
-            text_color=_TEXT_SECONDARY,
-            anchor="w",
-            command=self._toggle_breakdown,
-        )
-        self._breakdown_toggle_btn.pack(fill="x", pady=(0, _SP_4))
-
-        self._breakdown_container = ctk.CTkFrame(right_col, fg_color="transparent")
-        self._breakdown_container.pack(fill="x", anchor="w")
-
-        # Horizontal separator (below breakdown)
-        self._breakdown_sep = ctk.CTkFrame(
-            right_col, fg_color=_DIVIDER, height=1,
-        )
-        self._breakdown_sep.pack(fill="x", pady=_SP_12)
 
         # Suggestions section
         ctk.CTkLabel(
@@ -452,25 +435,11 @@ class PasswordAnalyzerApp(ctk.CTk):
             self._entry.configure(show="\u2022")
             self._toggle_btn.configure(text="\u25ce")
 
-    # ====================================================== Breakdown toggle
-
-    def _toggle_breakdown(self) -> None:
-        self._breakdown_visible = not self._breakdown_visible
-        if self._breakdown_visible:
-            self._breakdown_toggle_btn.configure(text="\u25bc  Score Breakdown")
-            if hasattr(self, "_last_result"):
-                self._render_breakdown(self._last_result)
-        else:
-            self._breakdown_toggle_btn.configure(text="\u25b6  Score Breakdown")
-            for w in self._breakdown_container.winfo_children():
-                w.destroy()
+    # ====================================================== Breakdown
 
     def _render_breakdown(self, result: EvaluationResult) -> None:
         for w in self._breakdown_container.winfo_children():
             w.destroy()
-
-        if not self._breakdown_visible:
-            return
 
         dimensions = [
             ("Length", result.length_pts, MAX_LENGTH_SCORE),
@@ -571,6 +540,11 @@ class PasswordAnalyzerApp(ctk.CTk):
                 col = _DANGER
             else:
                 col = _TEXT_SECONDARY
+
+            # Skip redundant entropy line (already shown in left column)
+            stripped = line.strip()
+            if stripped.startswith("Entropy:"):
+                continue
 
             ctk.CTkLabel(
                 self._details_container, text=f"  {line}",
