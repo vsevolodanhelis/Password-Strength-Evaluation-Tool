@@ -11,7 +11,6 @@ Usage:
 """
 
 import sys
-import math
 import tkinter as tk
 
 try:

@@ -21,7 +21,7 @@ _RE_UPPER = re.compile(r"[A-Z]")
 _RE_DIGIT = re.compile(r"[0-9]")
 _RE_SPECIAL = re.compile(r"[^a-zA-Z0-9]")
 
-_CATEGORY_NAMES = {
+CATEGORY_NAMES = {
     "lower": "lowercase letters",
     "upper": "uppercase letters",
     "digit": "digits",

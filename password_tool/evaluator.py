@@ -12,16 +12,15 @@ The central scoring engine.  Combines five analysis dimensions:
 Final score is clamped to 0-100.
 """
 
+import math
 import secrets
 import string
 from dataclasses import dataclass, field
 
 from password_tool.entropy import (
-    calculate_entropy,
     classify_characters,
-    entropy_score,
     estimate_crack_time,
-    _CATEGORY_NAMES,
+    CATEGORY_NAMES,
 )
 from password_tool.dictionary_check import (
     is_common_password,
@@ -61,7 +60,6 @@ MAX_ENTROPY_SCORE   = 30
 POINTS_PER_CATEGORY     = 6
 ALL_CATEGORIES_BONUS    = 1
 
-PATTERN_PENALTY_PER_TYPE = -5
 PATTERN_PENALTY_TOTAL    = -15
 
 SIMILAR_PENALTY      = -20
@@ -88,18 +86,16 @@ def _length_score(password: str) -> int:
         return 0
 
 
-def _diversity_score(password: str) -> tuple[int, list[str], list[str]]:
+def _diversity_score(cats: dict[str, bool]) -> tuple[int, list[str], list[str]]:
     """
     Score based on character-category diversity (0 - MAX_DIVERSITY_SCORE).
 
     Returns (score, present_categories, missing_categories).
     """
-    cats = classify_characters(password)
-
     present: list[str] = []
     missing: list[str] = []
     for key, found in cats.items():
-        name = _CATEGORY_NAMES[key]
+        name = CATEGORY_NAMES[key]
         if found:
             present.append(name)
         else:
@@ -142,6 +138,9 @@ def evaluate_password(password: str) -> EvaluationResult:
     details:     list[str] = []
     suggestions: list[str] = []
 
+    # --- Character classification (single call for all downstream uses) -----
+    cats = classify_characters(password)
+
     # --- 1. Length (0 - MAX_LENGTH_SCORE) -----------------------------------
     l_score = _length_score(password)
     if len(password) >= 12:
@@ -160,7 +159,7 @@ def evaluate_password(password: str) -> EvaluationResult:
         )
 
     # --- 2. Character diversity (0 - MAX_DIVERSITY_SCORE) ------------------
-    d_score, present, missing = _diversity_score(password)
+    d_score, present, missing = _diversity_score(cats)
     for cat in present:
         details.append(f"\u2713 Contains {cat}")
     for cat in missing:
@@ -177,9 +176,24 @@ def evaluate_password(password: str) -> EvaluationResult:
             suggestions.append(f"Add {cat} to increase diversity.")
 
     # --- 3. Entropy (0 - MAX_ENTROPY_SCORE) --------------------------------
-    e_bits  = calculate_entropy(password)
-    e_score = entropy_score(password)
+    charset = (
+        (26 if cats["lower"] else 0) +
+        (26 if cats["upper"] else 0) +
+        (10 if cats["digit"] else 0) +
+        (32 if cats["special"] else 0)
+    ) or 1
+    e_bits  = len(password) * math.log2(charset)
     crack   = estimate_crack_time(e_bits)
+
+    if e_bits >= 60:
+        e_score = 30
+    elif e_bits >= 36:
+        e_score = 20
+    elif e_bits >= 28:
+        e_score = 10
+    else:
+        e_score = 5
+
     details.append(f"  Entropy: {e_bits:.1f} bits")
 
     # --- 4. Pattern penalty (0 to PATTERN_PENALTY_TOTAL) --------------------
