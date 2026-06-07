@@ -207,11 +207,65 @@ class PasswordAnalyzerApp(ctk.CTk):
         )
         self._generate_btn.pack(fill="x", padx=_CARD_PADX, pady=(_SP_12, _SP_16))
 
-        # --- Analysis card (two-column) ----------------------------------
+        # --- Analysis card (two-column, pack-based) -------------------------
         analysis_card = self._card(content)
         analysis_card.pack(fill="both", expand=True, pady=(_SP_16, _SP_24))
 
-        # -- Left column: Score overview --
+        # -- Centered idle overlay (shown when no password entered) ----------
+        # Uses place for ALL children (avoids CTkFrame place+pack conflict)
+        self._idle_overlay = ctk.CTkFrame(analysis_card, fg_color=_BG_PANEL,
+                                           corner_radius=0, width=300, height=320)
+
+        self._idle_gauge = tk.Canvas(
+            self._idle_overlay, width=220, height=130,
+            bg=_BG_PANEL, highlightthickness=0,
+        )
+        self._idle_gauge.place(relx=0.5, y=80, anchor="n")
+        self._draw_idle_gauge(0)
+
+        self._idle_score = ctk.CTkLabel(
+            self._idle_overlay, text="\u2014 / 100",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=32, weight="bold"),
+            text_color=_TEXT_PRIMARY,
+        )
+        self._idle_score.place(relx=0.5, y=220, anchor="n")
+
+        self._idle_strength = ctk.CTkLabel(
+            self._idle_overlay, text="Start typing to analyze",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=16, weight="bold"),
+            text_color=_TEXT_SECONDARY,
+        )
+        self._idle_strength.place(relx=0.5, y=264, anchor="n")
+
+        ctk.CTkLabel(
+            self._idle_overlay, text="ENTROPY",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=10),
+            text_color=_TEXT_SECONDARY,
+        ).place(relx=0.3, y=310, anchor="n")
+        self._idle_entropy = ctk.CTkLabel(
+            self._idle_overlay, text="\u2014",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=14, weight="bold"),
+            text_color=_TEXT_PRIMARY,
+        )
+        self._idle_entropy.place(relx=0.3, y=326, anchor="n")
+
+        ctk.CTkLabel(
+            self._idle_overlay, text="CRACK TIME",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=10),
+            text_color=_TEXT_SECONDARY,
+        ).place(relx=0.7, y=310, anchor="n")
+        self._idle_crack = ctk.CTkLabel(
+            self._idle_overlay, text="\u2014",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=14, weight="bold"),
+            text_color=_TEXT_PRIMARY,
+        )
+        self._idle_crack.place(relx=0.7, y=326, anchor="n")
+
+        # Show overlay initially, hide two-column content
+        self._idle_overlay.place(relx=0.5, rely=0.5, anchor="center")
+
+        # -- Two-column layout (hidden initially, revealed on typing) --------
+        # Left column: Score overview --
         left_col = ctk.CTkFrame(analysis_card, fg_color="transparent")
         left_col.pack(side="left", fill="y", padx=(_CARD_PADX, 0), pady=_SP_16)
 
@@ -274,7 +328,7 @@ class PasswordAnalyzerApp(ctk.CTk):
         )
         self._crack_label.pack()
 
-        # Score Breakdown (left column, below entropy/crack time)
+        # Score Breakdown
         ctk.CTkLabel(
             left_col, text="Score Breakdown",
             font=ctk.CTkFont(family=_FONT_FAMILY, size=12, weight="bold"),
@@ -285,8 +339,8 @@ class PasswordAnalyzerApp(ctk.CTk):
         self._breakdown_container.pack(fill="x")
 
         # -- Vertical divider --
-        divider = ctk.CTkFrame(analysis_card, fg_color=_DIVIDER, width=1)
-        divider.pack(side="left", fill="y", padx=(_SP_8, _SP_8), pady=_SP_16)
+        self._divider = ctk.CTkFrame(analysis_card, fg_color=_DIVIDER, width=1)
+        self._divider.pack(side="left", fill="y", padx=(_SP_8, _SP_8), pady=_SP_16)
 
         # -- Right column: Details + Suggestions --
         right_col = ctk.CTkFrame(analysis_card, fg_color="transparent")
@@ -326,6 +380,9 @@ class PasswordAnalyzerApp(ctk.CTk):
             self._sugg_container,
             "Start typing to see suggestions.",
         )
+
+        # Hide two-column content initially (overlay is on top)
+        self.after(10, self._show_idle_state)
 
     # ============================================================ Helpers
 
@@ -423,6 +480,37 @@ class PasswordAnalyzerApp(ctk.CTk):
         self._anim_target_color = color
         self._animate_gauge()
 
+    # ==================================================== Idle/Active state
+
+    def _draw_idle_gauge(self, score: float) -> None:
+        """Draw the idle state centered gauge."""
+        c = self._idle_gauge
+        c.delete("all")
+        cx, cy = 110, 115
+        r_outer = 96
+        lw = 16
+        c.create_arc(
+            cx - r_outer, cy - r_outer, cx + r_outer, cy + r_outer,
+            start=0, extent=180,
+            outline=_GAUGE_BG, width=lw, style="arc",
+        )
+        extent = (score / 100) * 180
+        if extent > 0.5:
+            c.create_arc(
+                cx - r_outer, cy - r_outer, cx + r_outer, cy + r_outer,
+                start=180, extent=-extent,
+                outline=_GAUGE_BG, width=lw, style="arc",
+            )
+
+    def _show_idle_state(self) -> None:
+        """Show centered idle overlay covering the full analysis card."""
+        self._idle_overlay.lift()
+        self._idle_overlay.place(relx=0, rely=0, relwidth=1.0, relheight=1.0)
+
+    def _show_active_state(self) -> None:
+        """Hide idle overlay, show two-column layout."""
+        self._idle_overlay.place_forget()
+
     # ====================================================== Toggle
 
     def _toggle_visibility(self) -> None:
@@ -516,6 +604,7 @@ class PasswordAnalyzerApp(ctk.CTk):
         label = result.label
         color = _STRENGTH_COLORS.get(label, _TEXT_SECONDARY)
 
+        self._show_active_state()
         self._start_gauge_animation(score, color)
 
         self._score_label.configure(text=f"{score} / 100")
@@ -577,6 +666,7 @@ class PasswordAnalyzerApp(ctk.CTk):
     # ====================================================== Reset
 
     def _reset_display(self) -> None:
+        self._show_idle_state()
         self._start_gauge_animation(0, _GAUGE_BG)
         self._score_label.configure(text="\u2014 / 100")
         self._strength_label.configure(
