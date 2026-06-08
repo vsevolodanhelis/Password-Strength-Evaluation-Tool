@@ -211,63 +211,11 @@ class PasswordAnalyzerApp(ctk.CTk):
         analysis_card = self._card(content)
         analysis_card.pack(fill="both", expand=True, pady=(_SP_16, _SP_24))
 
-        # -- Centered idle overlay (shown when no password entered) ----------
-        # Uses place for ALL children (avoids CTkFrame place+pack conflict)
-        self._idle_overlay = ctk.CTkFrame(analysis_card, fg_color=_BG_PANEL,
-                                           corner_radius=0, width=300, height=320)
-
-        self._idle_gauge = tk.Canvas(
-            self._idle_overlay, width=220, height=130,
-            bg=_BG_PANEL, highlightthickness=0,
-        )
-        self._idle_gauge.place(relx=0.5, y=80, anchor="n")
-        self._draw_idle_gauge(0)
-
-        self._idle_score = ctk.CTkLabel(
-            self._idle_overlay, text="\u2014 / 100",
-            font=ctk.CTkFont(family=_FONT_FAMILY, size=32, weight="bold"),
-            text_color=_TEXT_PRIMARY,
-        )
-        self._idle_score.place(relx=0.5, y=220, anchor="n")
-
-        self._idle_strength = ctk.CTkLabel(
-            self._idle_overlay, text="Start typing to analyze",
-            font=ctk.CTkFont(family=_FONT_FAMILY, size=16, weight="bold"),
-            text_color=_TEXT_SECONDARY,
-        )
-        self._idle_strength.place(relx=0.5, y=264, anchor="n")
-
-        ctk.CTkLabel(
-            self._idle_overlay, text="ENTROPY",
-            font=ctk.CTkFont(family=_FONT_FAMILY, size=10),
-            text_color=_TEXT_SECONDARY,
-        ).place(relx=0.3, y=310, anchor="n")
-        self._idle_entropy = ctk.CTkLabel(
-            self._idle_overlay, text="\u2014",
-            font=ctk.CTkFont(family=_FONT_FAMILY, size=14, weight="bold"),
-            text_color=_TEXT_PRIMARY,
-        )
-        self._idle_entropy.place(relx=0.3, y=326, anchor="n")
-
-        ctk.CTkLabel(
-            self._idle_overlay, text="CRACK TIME",
-            font=ctk.CTkFont(family=_FONT_FAMILY, size=10),
-            text_color=_TEXT_SECONDARY,
-        ).place(relx=0.7, y=310, anchor="n")
-        self._idle_crack = ctk.CTkLabel(
-            self._idle_overlay, text="\u2014",
-            font=ctk.CTkFont(family=_FONT_FAMILY, size=14, weight="bold"),
-            text_color=_TEXT_PRIMARY,
-        )
-        self._idle_crack.place(relx=0.7, y=326, anchor="n")
-
-        # Show overlay initially, hide two-column content
-        self._idle_overlay.place(relx=0.5, rely=0.5, anchor="center")
-
         # -- Two-column layout (hidden initially, revealed on typing) --------
         # Left column: Score overview --
-        left_col = ctk.CTkFrame(analysis_card, fg_color="transparent")
+        left_col = ctk.CTkFrame(analysis_card, fg_color="transparent", width=320)
         left_col.pack(side="left", fill="y", padx=(_CARD_PADX, 0), pady=_SP_16)
+        left_col.pack_propagate(False)
 
         # Gauge
         gauge_container = ctk.CTkFrame(left_col, fg_color="transparent")
@@ -381,7 +329,72 @@ class PasswordAnalyzerApp(ctk.CTk):
             "Start typing to see suggestions.",
         )
 
-        # Hide two-column content initially (overlay is on top)
+        # -- Idle overlay (landing screen) ---------------------------------
+        # Created AFTER pack children so it renders on top.
+        # Uses place for ALL children (avoids CTkFrame place+pack conflict).
+        self._idle_overlay = ctk.CTkFrame(
+            analysis_card, fg_color=_BG_PANEL, corner_radius=0,
+        )
+
+        ctk.CTkLabel(
+            self._idle_overlay,
+            text="How strong is your password?",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=22, weight="bold"),
+            text_color=_TEXT_PRIMARY,
+        ).place(relx=0.5, y=35, anchor="n")
+
+        ctk.CTkLabel(
+            self._idle_overlay,
+            text="Type a password above to get started",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=14),
+            text_color=_ACCENT,
+        ).place(relx=0.5, y=75, anchor="n")
+
+        # Feature cards — 3 cards with title + description
+        card_w = 200
+        card_h = 60
+        card_gap = 20
+        card_y = 115
+        total_cards_w = 3 * card_w + 2 * card_gap
+        card_x_start = 450 - total_cards_w // 2
+
+        feature_cards = [
+            ("Length & Diversity", "Measures character variety"),
+            ("Entropy Analysis", "Calculates information density"),
+            ("Pattern Detection", "Catches predictable sequences"),
+        ]
+
+        for i, (title, desc) in enumerate(feature_cards):
+            cx = card_x_start + i * (card_w + card_gap)
+            card = ctk.CTkFrame(
+                self._idle_overlay, fg_color="#1e293b",
+                corner_radius=10, width=card_w, height=card_h,
+            )
+            card.place(x=cx, y=card_y, anchor="nw")
+            card.pack_propagate(False)
+
+            inner = ctk.CTkFrame(card, fg_color="transparent")
+            inner.place(relx=0.5, rely=0.5, anchor="center")
+
+            ctk.CTkLabel(
+                inner, text=title,
+                font=ctk.CTkFont(family=_FONT_FAMILY, size=12, weight="bold"),
+                text_color=_TEXT_PRIMARY,
+            ).pack()
+            ctk.CTkLabel(
+                inner, text=desc,
+                font=ctk.CTkFont(family=_FONT_FAMILY, size=10),
+                text_color=_TEXT_SECONDARY,
+            ).pack(pady=(2, 0))
+
+        ctk.CTkLabel(
+            self._idle_overlay,
+            text="Evaluated locally \u2014 nothing leaves your device",
+            font=ctk.CTkFont(family=_FONT_FAMILY, size=13),
+            text_color=_TEXT_SECONDARY,
+        ).place(relx=0.5, y=195, anchor="n")
+
+        # Show overlay on startup
         self.after(10, self._show_idle_state)
 
     # ============================================================ Helpers
@@ -482,26 +495,6 @@ class PasswordAnalyzerApp(ctk.CTk):
 
     # ==================================================== Idle/Active state
 
-    def _draw_idle_gauge(self, score: float) -> None:
-        """Draw the idle state centered gauge."""
-        c = self._idle_gauge
-        c.delete("all")
-        cx, cy = 110, 115
-        r_outer = 96
-        lw = 16
-        c.create_arc(
-            cx - r_outer, cy - r_outer, cx + r_outer, cy + r_outer,
-            start=0, extent=180,
-            outline=_GAUGE_BG, width=lw, style="arc",
-        )
-        extent = (score / 100) * 180
-        if extent > 0.5:
-            c.create_arc(
-                cx - r_outer, cy - r_outer, cx + r_outer, cy + r_outer,
-                start=180, extent=-extent,
-                outline=_GAUGE_BG, width=lw, style="arc",
-            )
-
     def _show_idle_state(self) -> None:
         """Show centered idle overlay covering the full analysis card."""
         self._idle_overlay.lift()
@@ -547,7 +540,7 @@ class PasswordAnalyzerApp(ctk.CTk):
             ctk.CTkLabel(
                 row, text=name,
                 font=ctk.CTkFont(family=_FONT_FAMILY, size=12),
-                text_color=_TEXT_SECONDARY, width=80, anchor="w",
+                text_color=_TEXT_SECONDARY, width=90, anchor="w",
             ).pack(side="left")
 
             bar_frame = ctk.CTkFrame(row, fg_color=_GAUGE_BG, height=10, corner_radius=5)
@@ -637,7 +630,7 @@ class PasswordAnalyzerApp(ctk.CTk):
             ctk.CTkLabel(
                 self._details_container, text=f"  {line}",
                 font=ctk.CTkFont(family=_FONT_FAMILY, size=13),
-                text_color=col, anchor="w", wraplength=400,
+                text_color=col, anchor="w", wraplength=500,
             ).pack(anchor="w", pady=1)
 
         # ---- Suggestions ----
@@ -650,7 +643,7 @@ class PasswordAnalyzerApp(ctk.CTk):
                     self._sugg_container,
                     text=f"  \u2022  {tip}",
                     font=ctk.CTkFont(family=_FONT_FAMILY, size=13),
-                    text_color=_TEXT_PRIMARY, anchor="w", wraplength=400,
+                    text_color=_TEXT_PRIMARY, anchor="w", wraplength=500,
                 ).pack(anchor="w", pady=1)
         else:
             ctk.CTkLabel(
